@@ -132,17 +132,27 @@ The model operates at a fixed resolution. Three modes are available:
 
 Intrinsics are automatically scaled based on the input image dimensions.
 
+## Tips
+
+- **VRAM**: Set `--vram_limit` (in GB) to fit different GPUs. The model offloads weights to CPU when VRAM is limited. For example, use `--vram_limit 22` for a 24 GB card.
+- **Speed**: Reduce `--num_inference_steps` to speed up generation (default 50; 10–20 still gives reasonable quality).
+
 ## File Structure
 
 ```
 FrameCrafter/
 ├── model.py              # FrameCrafter class: model loading + generation
 ├── infer.py              # CLI for inference
+├── demo.py               # Demo script for bundled examples
 ├── camera_utils.py       # Plucker ray computation & pose normalisation
-├── demo.py               # Demo script for example scenes
-├── pyproject.toml        # Package config (pip install -e .)
 ├── assets/               # Visual examples
-└── diffsynth/            # Core diffusion library
+├── diffsynth/            # Core diffusion library
+├── examples/             # Bundled demo scenes (inputs + poses)
+├── prepare/              # Scripts for downloading checkpoints
+├── pyproject.toml        # Package config (pip install -e .)
+└── LICENSE               # Apache 2.0
 ```
 
+## License
 
+This project is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for details.
