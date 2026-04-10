@@ -6,8 +6,8 @@
 
 Carnegie Mellon University
 
-[[`arXiv`](https://arxiv.org/abs/2604.08500)]
-[[`Project Page`](https://frame-crafter.github.io/)]
+[![arXiv](https://img.shields.io/badge/arXiv-2604.08500-b31b1b?style=flat&logo=arxiv)](https://arxiv.org/abs/2604.08500)
+[![Project Page](https://img.shields.io/badge/Project_Page-FrameCrafter-4CAF50?style=flat&logo=googlechrome&logoColor=white)](https://frame-crafter.github.io/)
 
 </div>
 
