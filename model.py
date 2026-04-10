@@ -199,9 +199,38 @@ class FrameCrafter:
         if base_model_dir is not None:
             dit_dir = os.path.join(base_model_dir, "Wan-AI/Wan2.1-I2V-14B-480P")
             dit_files = sorted(_glob.glob(os.path.join(dit_dir, "diffusion_pytorch_model*.safetensors")))
-            t5_path = os.path.join(base_model_dir, "DiffSynth-Studio/Wan-Series-Converted-Safetensors/models_t5_umt5-xxl-enc-bf16.safetensors")
-            vae_path = os.path.join(base_model_dir, "DiffSynth-Studio/Wan-Series-Converted-Safetensors/Wan2.1_VAE.safetensors")
-            clip_path = os.path.join(base_model_dir, "DiffSynth-Studio/Wan-Series-Converted-Safetensors/models_clip_open-clip-xlm-roberta-large-vit-huge-14.safetensors")
+
+            # Resolve T5/VAE/CLIP from whichever layout is present:
+            #   - ModelScope:   DiffSynth-Studio/Wan-Series-Converted-Safetensors/*.safetensors
+            #   - HuggingFace:  Wan-AI/Wan2.1-I2V-14B-480P/*.pth
+            converted_dir = os.path.join(base_model_dir, "DiffSynth-Studio/Wan-Series-Converted-Safetensors")
+            def _resolve(name_safetensors: str, name_pth: str, label: str) -> str:
+                converted = os.path.join(converted_dir, name_safetensors)
+                original = os.path.join(dit_dir, name_pth)
+                if os.path.exists(converted):
+                    return converted
+                if os.path.exists(original):
+                    return original
+                raise FileNotFoundError(
+                    f"Could not find {label} weights under {base_model_dir}. "
+                    f"Looked for:\n  {converted}\n  {original}"
+                )
+
+            t5_path = _resolve(
+                "models_t5_umt5-xxl-enc-bf16.safetensors",
+                "models_t5_umt5-xxl-enc-bf16.pth",
+                "T5 text encoder",
+            )
+            vae_path = _resolve(
+                "Wan2.1_VAE.safetensors",
+                "Wan2.1_VAE.pth",
+                "VAE",
+            )
+            clip_path = _resolve(
+                "models_clip_open-clip-xlm-roberta-large-vit-huge-14.safetensors",
+                "models_clip_open-clip-xlm-roberta-large-vit-huge-14.pth",
+                "CLIP image encoder",
+            )
             tokenizer_path = os.path.join(base_model_dir, "Wan-AI/Wan2.1-T2V-1.3B/google/umt5-xxl")
 
             model_configs = [
@@ -220,11 +249,20 @@ class FrameCrafter:
             ]
             tokenizer_config = ModelConfig(model_id="Wan-AI/Wan2.1-T2V-1.3B", origin_file_pattern="google/umt5-xxl/")
 
+        # `redirect_common_files` rewrites the T5/VAE/CLIP file ids to
+        # `DiffSynth-Studio/Wan-Series-Converted-Safetensors`, which only
+        # exists on ModelScope. Disable the redirect when downloading from
+        # HuggingFace so the original .pth files are pulled from the
+        # `Wan-AI/Wan2.1-I2V-14B-480P` repo instead.
+        download_source = os.environ.get("DIFFSYNTH_DOWNLOAD_SOURCE", "modelscope")
+        redirect_common_files = download_source.lower() != "huggingface"
+
         self.pipe = WanVideoPipeline.from_pretrained(
             torch_dtype=torch.bfloat16,
             device=device,
             model_configs=model_configs,
             tokenizer_config=tokenizer_config,
+            redirect_common_files=redirect_common_files,
             vram_limit=vram_limit,
         )
         self._modify_channels(self.IN_DIM)
