@@ -52,13 +52,21 @@ model = FrameCrafter(
 
 ## Model Weights
 
-Download the FrameCrafter checkpoint:
+Download the FrameCrafter checkpoint into `ckpt/`:
+
+**Option A -- [Hugging Face](https://huggingface.co/szqwu/FrameCrafter) (recommended):**
+
+```bash
+huggingface-cli download szqwu/FrameCrafter framecrafter.safetensors --local-dir ckpt
+```
+
+**Option B -- Google Drive:**
 
 ```bash
 bash prepare/download_ckpt.sh
 ```
 
-This places the checkpoint at `ckpt/framecrafter.safetensors` (the default path used by the scripts).
+Both place the checkpoint at `ckpt/framecrafter.safetensors` (the default path used by the scripts).
 
 ## Quick Start
 
